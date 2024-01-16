@@ -4,13 +4,20 @@ use super::errors;
 pub enum Token {
     Char(Char),
     Quantifier(Quantifier),
+    Anchor(Anchor),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Quantifier {
     Any,
     Many,
-    Option,
+    Maybe,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Anchor {
+    Start,
+    End,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -33,9 +40,12 @@ pub fn tokenize(pattern: String) -> Result<Vec<Token>, errors::ParseError> {
                     ))
                 }
             },
+            '.' => Token::Char(Char::Dot),
             '*' => Token::Quantifier(Quantifier::Any),
             '+' => Token::Quantifier(Quantifier::Many),
-            '?' => Token::Quantifier(Quantifier::Option),
+            '?' => Token::Quantifier(Quantifier::Maybe),
+            '^' => Token::Anchor(Anchor::Start),
+            '$' => Token::Anchor(Anchor::End),
             c => Token::Char(Char::Lit(c)),
         })
     }
