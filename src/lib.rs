@@ -5,6 +5,23 @@ mod tokenizer;
 
 pub use regex::Regex;
 
+// TODO : Add support for Anchors. Modify and finilize the Ast.
+// I think we should have the Anchor::Start enum take the rest of the ast
+// in its attribute instead of adding the anchor to the list.
+// ex: StartAnchor(Box<AstNode>)
+
+// TODO : is_match() -> bool
+
+// TODO : find() -> Match
+// Match can be a structure with :
+//      - .matched (bool)
+//      - .start (index)
+//      - .end (index)
+//      - range() (range (start, end) index of what was matched)
+
+// TODO : add support for "abc*d(efg)+" parens
+// TODO : later support captures
+
 #[cfg(test)]
 mod tests {
     use super::*;
