@@ -5,10 +5,11 @@ mod tokenizer;
 
 pub use regex::Regex;
 
-// TODO : Add support for Anchors. Modify and finilize the Ast.
-// I think we should have the Anchor::Start enum take the rest of the ast
-// in its attribute instead of adding the anchor to the list.
-// ex: StartAnchor(Box<AstNode>)
+// DONE
+// // TODO : Add support for Anchors. Modify and finilize the Ast.
+// // I think we should have the Anchor::Start enum take the rest of the ast
+// // in its attribute instead of adding the anchor to the list.
+// // ex: StartAnchor(Box<AstNode>)
 
 // TODO : is_match() -> bool
 
@@ -19,6 +20,9 @@ pub use regex::Regex;
 //      - .end (index)
 //      - range() (range (start, end) index of what was matched)
 
+// TODO : [] character classes
+// TODO : non-capturing groups (?:abc)*
+// TODO : capturing groups (abc)
 // TODO : add support for "abc*d(efg)+" parens
 // TODO : later support captures
 
@@ -27,22 +31,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test_no_start_anchor() {
         let reg = Regex::new(r#"hello"#).unwrap();
 
         assert!(reg.is_match("hello"));
         assert!(reg.is_match("hello "));
         assert!(reg.is_match("hello world"));
-        assert!(reg.is_match("hellow"));
+        assert!(reg.is_match("  hellow"));
 
         assert!(!reg.is_match("hell"));
     }
 
     #[test]
-    fn test_empty_start() {
+    fn test_start_anchor() {
         let reg = Regex::new(r#"^hello"#).unwrap();
 
         assert!(reg.is_match("hello"));
+        assert!(!reg.is_match("qhello"));
+    }
+
+    #[test]
+    fn test_end_anchor() {
+        let reg = Regex::new(r#"hello$"#).unwrap();
+
+        assert!(reg.is_match("hello"));
+        assert!(!reg.is_match("helloq"));
     }
 
     #[test]

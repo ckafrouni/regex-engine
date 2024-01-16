@@ -1,35 +1,47 @@
 use super::errors;
 use super::tokenizer;
 
+// #[derive(Debug)]
+// pub enum Ast {
+//     StartAnchor(Box<AstNode >)
+// }
+
 #[derive(Debug)]
 pub enum AstNode {
     Chain(Vec<Box<AstNode>>),
     Quantifier(tokenizer::Quantifier, Box<AstNode>),
     Char(tokenizer::Char),
-    Anchor(tokenizer::Anchor),
+    StartAnchor(Box<AstNode>),
+    EndAnchor,
 }
 
 pub fn parse(tokens: Vec<tokenizer::Token>) -> Result<AstNode, errors::ParseError> {
     let mut chain: Vec<Box<AstNode>> = vec![];
-    let mut it = tokens.iter().peekable();
-    while let Some(tk) = it.next() {
-        let node: AstNode = match tk {
+    let mut has_start_anchor = false;
+    let mut has_end_anchor = false;
+    let mut tokens = tokens.iter().peekable();
+
+    if let Some(tokenizer::Token::Anchor(tokenizer::Anchor::Start)) = tokens.peek() {
+        tokens.next();
+        has_start_anchor = true;
+    }
+
+    while let Some(tok) = tokens.next() {
+        if has_end_anchor {
+            return Err(errors::ParseError::UnexpectedToken(
+                "End anchor only allowed at the end of the string".into(),
+            ));
+        }
+        let node: AstNode = match tok {
             tokenizer::Token::Char(c) => AstNode::Char(*c),
             tokenizer::Token::Anchor(tokenizer::Anchor::Start) => {
-                if !chain.is_empty() {
-                    return Err(errors::ParseError::UnexpectedToken(
-                        "Start anchor token not at the start".into(),
-                    ));
-                }
-                AstNode::Anchor(tokenizer::Anchor::Start)
+                return Err(errors::ParseError::UnexpectedToken(
+                    "Start anchor only allowed at the start of the string".into(),
+                ))
             }
             tokenizer::Token::Anchor(tokenizer::Anchor::End) => {
-                if it.peek().is_some() {
-                    return Err(errors::ParseError::UnexpectedToken(
-                        "End anchor token not at the end".into(),
-                    ));
-                }
-                AstNode::Anchor(tokenizer::Anchor::End)
+                has_end_anchor = true;
+                AstNode::EndAnchor
             }
             _ => {
                 return Err(errors::ParseError::UnexpectedToken(
@@ -38,15 +50,18 @@ pub fn parse(tokens: Vec<tokenizer::Token>) -> Result<AstNode, errors::ParseErro
             }
         };
 
-        match it.peek() {
+        match tokens.peek() {
             Some(tokenizer::Token::Quantifier(m)) => {
-                it.next();
+                tokens.next();
                 chain.push(Box::new(AstNode::Quantifier(*m, Box::new(node))))
             }
             _ => chain.push(Box::new(node)),
         }
     }
 
-    let root = AstNode::Chain(chain);
-    Ok(root)
+    if has_start_anchor {
+        Ok(AstNode::StartAnchor(Box::new(AstNode::Chain(chain))))
+    } else {
+        Ok(AstNode::Chain(chain))
+    }
 }

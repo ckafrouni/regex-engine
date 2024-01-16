@@ -16,10 +16,8 @@ impl Regex {
 impl Regex {
     pub fn is_match(&self, s: impl AsRef<str>) -> bool {
         // TODO I'm adding support for anchors
-        match self.ast {
-            parser::AstNode::Anchor(tokenizer::Anchor::Start) => {
-                self.match_node(&self.ast, s.as_ref()).is_some()
-            }
+        match &self.ast {
+            parser::AstNode::StartAnchor(ast) => self.match_node(ast, s.as_ref()).is_some(),
             _ => {
                 let s = s.as_ref();
                 s.chars()
@@ -47,7 +45,14 @@ impl Regex {
             } // Matches any single character
             parser::AstNode::Chain(nodes) => self.match_chain(nodes, s),
             parser::AstNode::Quantifier(q, n) => self.match_quantifier(*q, n, s),
-            _ => panic!(),
+            parser::AstNode::EndAnchor => {
+                if s.is_empty() {
+                    Some(0)
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 
