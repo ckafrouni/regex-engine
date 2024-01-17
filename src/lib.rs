@@ -1,14 +1,18 @@
+//! TODO : non-capturing groups (?:abc)*
+//!
+//! TODO : capturing groups (abc) - started
+//!
+//! TODO : add support for "abc*d(efg)+" parens
+//!
+//! TODO : later support captures
+
 pub mod errors;
 mod parser;
 mod regex;
 mod tokenizer;
 
+pub use regex::Match;
 pub use regex::Regex;
-
-// TODO : non-capturing groups (?:abc)*
-// TODO : capturing groups (abc)
-// TODO : add support for "abc*d(efg)+" parens
-// TODO : later support captures
 
 #[cfg(test)]
 mod tests {

@@ -10,6 +10,7 @@ pub enum AstNode {
     CharClass(Box<[Char]>),
     StartAnchor(Box<AstNode>),
     EndAnchor,
+    CaptureGroup(Box<[AstNode]>),
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<AstNode, ParseError> {
@@ -72,6 +73,37 @@ pub fn parse(tokens: Vec<Token>) -> Result<AstNode, ParseError> {
                 ))
             }
             Token::Anchor {
+                val: Anchor::GroupStart { .. },
+                ..
+            } => {
+                let mut group = vec![];
+                for tok in tokens.by_ref() {
+                    match tok {
+                        Token::Char { val, .. } => group.push(AstNode::Char(*val)),
+                        Token::Anchor {
+                            val: Anchor::GroupEnd { .. },
+                            ..
+                        } => break,
+                        _ => {
+                            return Err(ParseError::UnexpectedToken(
+                                *tok,
+                                "Should have found a char literal".into(),
+                            ))
+                        }
+                    }
+                }
+                AstNode::CaptureGroup(group.into())
+            }
+            Token::Anchor {
+                val: Anchor::GroupEnd { .. },
+                ..
+            } => {
+                return Err(ParseError::UnexpectedToken(
+                    *tok,
+                    "Group end anchor only allowed after group start anchor".into(),
+                ))
+            }
+            Token::Anchor {
                 val: Anchor::Start, ..
             } => {
                 return Err(ParseError::UnexpectedToken(
@@ -126,6 +158,27 @@ mod tests {
         );
 
         let ast = parse(tokens).unwrap();
+        assert_eq!(ast, expected_ast);
+    }
+
+    #[test]
+    fn test_capture_group() {
+        let tokens = tokenize("(abc)".into()).unwrap();
+
+        let expected_ast = AstNode::Chain(
+            vec![AstNode::CaptureGroup(
+                vec![
+                    AstNode::Char(Char::Lit('a')),
+                    AstNode::Char(Char::Lit('b')),
+                    AstNode::Char(Char::Lit('c')),
+                ]
+                .into(),
+            )]
+            .into(),
+        );
+
+        let ast = parse(tokens).unwrap();
+        // println!("{ast:#?}");
         assert_eq!(ast, expected_ast);
     }
 }

@@ -1,3 +1,5 @@
+use crate::tokenizer::Char;
+
 use super::{errors, parser, tokenizer};
 
 #[derive(Default, Debug)]
@@ -67,6 +69,7 @@ impl Regex {
 
     fn match_node(&self, node: &parser::AstNode, s: &str) -> Option<usize> {
         match node {
+            parser::AstNode::Char(Char::Escape(_)) => todo!(),
             parser::AstNode::Char(tokenizer::Char::Lit(c)) => {
                 if s.starts_with(*c) {
                     Some(1)
@@ -82,7 +85,8 @@ impl Regex {
                 }
             }
             parser::AstNode::CharClass(chars) => {
-                if !s.is_empty() && chars.contains(&tokenizer::Char::Lit(s.chars().next().unwrap())) {
+                if !s.is_empty() && chars.contains(&tokenizer::Char::Lit(s.chars().next().unwrap()))
+                {
                     Some(1)
                 } else {
                     None
@@ -97,7 +101,8 @@ impl Regex {
                     None
                 }
             }
-            _ => None,
+            parser::AstNode::StartAnchor(_) => unreachable!(),
+            parser::AstNode::CaptureGroup(_) => todo!(),
         }
     }
 

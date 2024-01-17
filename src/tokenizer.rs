@@ -30,6 +30,8 @@ pub enum Anchor {
     End,
     CharClassStart,
     CharClassEnd,
+    GroupStart,
+    GroupEnd,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -182,6 +184,14 @@ pub fn tokenize(pattern: String) -> Result<Vec<Token>, errors::ParseError> {
             },
             ']' => Token::Anchor {
                 val: Anchor::CharClassEnd,
+                pos,
+            },
+            '(' => Token::Anchor {
+                val: Anchor::GroupStart,
+                pos,
+            },
+            ')' => Token::Anchor {
+                val: Anchor::GroupEnd,
                 pos,
             },
             c => Token::Char {
@@ -383,6 +393,20 @@ mod tests {
                 "]",
                 Token::Anchor {
                     val: Anchor::CharClassEnd,
+                    pos: 0,
+                },
+            ),
+            (
+                "(",
+                Token::Anchor {
+                    val: Anchor::GroupStart,
+                    pos: 0,
+                },
+            ),
+            (
+                ")",
+                Token::Anchor {
+                    val: Anchor::GroupEnd,
                     pos: 0,
                 },
             ),
