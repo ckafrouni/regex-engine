@@ -1,5 +1,27 @@
 use super::{errors, parser, tokenizer};
 
+#[derive(Default, Debug)]
+pub struct Match {
+    is_match: bool,
+    matched: Option<String>,
+    start: usize,
+    end: usize,
+}
+
+impl Match {
+    pub fn range(&self) -> (usize, usize) {
+        (self.start, self.end)
+    }
+
+    pub fn matched(&self) -> Option<&str> {
+        self.matched.as_deref()
+    }
+
+    pub fn is_match(&self) -> bool {
+        self.is_match
+    }
+}
+
 #[derive(Debug)]
 pub struct Regex {
     ast: parser::AstNode,
@@ -14,17 +36,33 @@ impl Regex {
 }
 
 impl Regex {
-    pub fn is_match(&self, s: impl AsRef<str>) -> bool {
-        // TODO I'm adding support for anchors
+    pub fn find(&self, s: impl AsRef<str>) -> Match {
+        let s = s.as_ref();
+        let mut match_res = Match::default();
+
         match &self.ast {
-            parser::AstNode::StartAnchor(ast) => self.match_node(ast, s.as_ref()).is_some(),
+            parser::AstNode::StartAnchor(ast) => {
+                if let Some(match_len) = self.match_node(ast, s) {
+                    match_res.is_match = true;
+                    match_res.start = 0;
+                    match_res.end = match_len;
+                    match_res.matched = Some(s[..match_len].into());
+                }
+            }
             _ => {
-                let s = s.as_ref();
-                s.chars()
-                    .enumerate()
-                    .any(|(i, _)| self.match_node(&self.ast, &s[i..]).is_some())
+                for (i, _) in s.char_indices() {
+                    if let Some(match_len) = self.match_node(&self.ast, &s[i..]) {
+                        match_res.is_match = true;
+                        match_res.start = i;
+                        match_res.end = i + match_len;
+                        match_res.matched = Some(s[i..i + match_len].into());
+                        break;
+                    }
+                }
             }
         }
+
+        match_res
     }
 
     fn match_node(&self, node: &parser::AstNode, s: &str) -> Option<usize> {

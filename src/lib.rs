@@ -5,21 +5,6 @@ mod tokenizer;
 
 pub use regex::Regex;
 
-// DONE
-// // TODO : Add support for Anchors. Modify and finilize the Ast.
-// // I think we should have the Anchor::Start enum take the rest of the ast
-// // in its attribute instead of adding the anchor to the list.
-// // ex: StartAnchor(Box<AstNode>)
-
-// TODO : is_match() -> bool
-
-// TODO : find() -> Match
-// Match can be a structure with :
-//      - .matched (bool)
-//      - .start (index)
-//      - .end (index)
-//      - range() (range (start, end) index of what was matched)
-
 // TODO : [] character classes
 // TODO : non-capturing groups (?:abc)*
 // TODO : capturing groups (abc)
@@ -34,78 +19,105 @@ mod tests {
     fn test_no_start_anchor() {
         let reg = Regex::new(r#"hello"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(reg.is_match("hello "));
-        assert!(reg.is_match("hello world"));
-        assert!(reg.is_match("  hellow"));
+        assert!(reg.find("hello").is_match());
+        assert!(reg.find("hello ").is_match());
+        assert!(reg.find("hello world").is_match());
+        assert!(reg.find("  hellow").is_match());
 
-        assert!(!reg.is_match("hell"));
+        assert!(!reg.find("hell").is_match());
     }
 
     #[test]
     fn test_start_anchor() {
         let reg = Regex::new(r#"^hello"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(!reg.is_match("qhello"));
+        assert!(reg.find("hello").is_match());
+        assert!(!reg.find("qhello").is_match());
     }
 
     #[test]
     fn test_end_anchor() {
         let reg = Regex::new(r#"hello$"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(!reg.is_match("helloq"));
+        assert!(reg.find("hello").is_match());
+        assert!(!reg.find("helloq").is_match());
     }
 
     #[test]
     fn test_any() {
         let reg = Regex::new(r#"he*llo"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(reg.is_match("heeello"));
-        assert!(reg.is_match("hllo"));
+        assert!(reg.find("hello").is_match());
+        assert!(reg.find("heeello").is_match());
+        assert!(reg.find("hllo").is_match());
     }
 
     #[test]
     fn test_many() {
         let reg = Regex::new(r#"he+llo"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(reg.is_match("heeello"));
+        assert!(reg.find("hello").is_match());
+        assert!(reg.find("heeello").is_match());
 
-        assert!(!reg.is_match("hllo"));
+        assert!(!reg.find("hllo").is_match());
     }
 
     #[test]
     fn test_maybe() {
         let reg = Regex::new(r#"he?llo"#).unwrap();
 
-        assert!(reg.is_match("hello"));
-        assert!(reg.is_match("hllo"));
+        assert!(reg.find("hello").is_match());
+        assert!(reg.find("hllo").is_match());
 
-        assert!(!reg.is_match("llo"));
-        assert!(!reg.is_match("hlo"));
-        assert!(!reg.is_match("heeello"));
+        assert!(!reg.find("llo").is_match());
+        assert!(!reg.find("hlo").is_match());
+        assert!(!reg.find("heeello").is_match());
     }
 
     #[test]
     fn test_dot() {
         let reg = Regex::new(r#"hel."#).unwrap();
 
-        assert!(reg.is_match("helo"));
-        assert!(reg.is_match("help"));
-        assert!(reg.is_match("hel."));
-        assert!(reg.is_match("hel "));
+        assert!(reg.find("helo").is_match());
+        assert!(reg.find("help").is_match());
+        assert!(reg.find("hel.").is_match());
+        assert!(reg.find("hel ").is_match());
     }
 
     #[test]
     fn test_dot_any() {
         let reg = Regex::new(r#"hel.*"#).unwrap();
 
-        assert!(reg.is_match("heloooo"));
-        assert!(reg.is_match("helpsdf"));
-        assert!(reg.is_match("hel.q"));
-        assert!(reg.is_match("hel sdf"));
+        assert!(reg.find("heloooo").is_match());
+        assert!(reg.find("helpsdf").is_match());
+        assert!(reg.find("hel.q").is_match());
+        assert!(reg.find("hel sdf").is_match());
+    }
+
+    #[test]
+    fn test_match() {
+        let reg = Regex::new(r#"hel.*"#).unwrap();
+
+        // Should match
+        let matched = reg.find("  heloooo");
+        println!("Matched: {:?}", matched);
+        assert!(matched.is_match());
+
+        let matched = reg.find("helpsdf");
+        println!("Matched: {:?}", matched);
+        assert!(matched.is_match());
+
+        let matched = reg.find("hel.q");
+        println!("Matched: {:?}", matched);
+        assert!(matched.is_match());
+
+        let matched = reg.find("hel sdf");
+        println!("Matched: {:?}", matched);
+        assert!(matched.is_match());
+
+        // Should not match
+        let matched = reg.find("he");
+        println!("Matched: {:?}", matched);
+        assert!(!matched.is_match());
     }
 }
