@@ -14,8 +14,8 @@ To use this regex engine in your Rust project, include it as a module and use th
 use rust_regex_engine::Regex;
 
 fn main() {
-    let regex = Regex::new("your_pattern_here").unwrap();
-    let res = regex.find("your_text_here");
+    let regex = Regex::new("^[hH]ello,? [wW]orld ?!").unwrap();
+    let res = regex.find("Hello, world!");
     println!("Does it match? {}", res.is_match());
 }
 ```

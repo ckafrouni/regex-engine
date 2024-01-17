@@ -15,6 +15,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_from_readme() {
+        let regex = Regex::new("^[hH]ello,? [wW]orld ?!").unwrap();
+        let res = regex.find("Hello, world!");
+        assert!(res.is_match());
+    }
+
+    #[test]
     fn test_no_start_anchor() {
         let reg = Regex::new(r#"hello"#).unwrap();
 

@@ -45,7 +45,7 @@ pub fn parse(tokens: Vec<Token>) -> Result<AstNode, ParseError> {
                 ..
             } => {
                 let mut chars = vec![];
-                while let Some(tok) = tokens.next() {
+                for tok in tokens.by_ref() {
                     match tok {
                         Token::Char { val, .. } => chars.push(*val),
                         Token::Anchor {
@@ -126,7 +126,6 @@ mod tests {
         );
 
         let ast = parse(tokens).unwrap();
-        println!("{:?}", ast);
         assert_eq!(ast, expected_ast);
     }
 }
