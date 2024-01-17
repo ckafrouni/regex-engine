@@ -80,7 +80,14 @@ impl Regex {
                 } else {
                     None
                 }
-            } // Matches any single character
+            }
+            parser::AstNode::CharClass(chars) => {
+                if !s.is_empty() && chars.contains(&tokenizer::Char::Lit(s.chars().next().unwrap())) {
+                    Some(1)
+                } else {
+                    None
+                }
+            }
             parser::AstNode::Chain(nodes) => self.match_chain(nodes, s),
             parser::AstNode::Quantifier(q, n) => self.match_quantifier(*q, n, s),
             parser::AstNode::EndAnchor => {

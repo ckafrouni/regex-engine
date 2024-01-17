@@ -5,7 +5,6 @@ mod tokenizer;
 
 pub use regex::Regex;
 
-// TODO : [] character classes
 // TODO : non-capturing groups (?:abc)*
 // TODO : capturing groups (abc)
 // TODO : add support for "abc*d(efg)+" parens
@@ -95,29 +94,61 @@ mod tests {
     }
 
     #[test]
-    fn test_match() {
-        let reg = Regex::new(r#"hel.*"#).unwrap();
+    fn test_dot_many() {
+        let reg = Regex::new(r#"hel.+"#).unwrap();
 
-        // Should match
-        let matched = reg.find("  heloooo");
-        println!("Matched: {:?}", matched);
-        assert!(matched.is_match());
+        assert!(reg.find("heloooo").is_match());
+        assert!(reg.find("helpsdf").is_match());
+        assert!(reg.find("hel.q").is_match());
 
-        let matched = reg.find("helpsdf");
-        println!("Matched: {:?}", matched);
-        assert!(matched.is_match());
+        assert!(!reg.find("hel").is_match());
+    }
 
-        let matched = reg.find("hel.q");
-        println!("Matched: {:?}", matched);
-        assert!(matched.is_match());
+    #[test]
+    fn test_dot_maybe() {
+        let reg = Regex::new(r#"hel.?"#).unwrap();
 
-        let matched = reg.find("hel sdf");
-        println!("Matched: {:?}", matched);
-        assert!(matched.is_match());
+        assert!(reg.find("heloooo").is_match());
+        assert!(reg.find("helpsdf").is_match());
+        assert!(reg.find("hel.q").is_match());
+        assert!(reg.find("hel").is_match());
+    }
 
-        // Should not match
-        let matched = reg.find("he");
-        println!("Matched: {:?}", matched);
-        assert!(!matched.is_match());
+    #[test]
+    fn test_char_class() {
+        let reg = Regex::new(r#"[abc]"#).unwrap();
+
+        assert!(reg.find("a").is_match());
+        assert!(reg.find("b").is_match());
+        assert!(reg.find("c").is_match());
+
+        assert!(!reg.find("d").is_match());
+        assert!(!reg.find("de").is_match());
+    }
+
+    #[test]
+    fn test_char_class_any() {
+        let reg = Regex::new(r#"[abc]*"#).unwrap();
+
+        assert!(reg.find("a").is_match());
+        assert!(reg.find("b").is_match());
+        assert!(reg.find("c").is_match());
+        assert!(reg.find("abc").is_match());
+        assert!(reg.find("abccba").is_match());
+
+        assert!(reg.find("d").is_match());
+        assert!(reg.find("de").is_match());
+    }
+
+    #[test]
+    fn test_char_class_start_anchor() {
+        let reg = Regex::new(r#"^[abc]"#).unwrap();
+
+        assert!(reg.find("a").is_match());
+        assert!(reg.find("b").is_match());
+        assert!(reg.find("c").is_match());
+
+        assert!(!reg.find("d").is_match());
+        assert!(!reg.find(" a").is_match());
     }
 }

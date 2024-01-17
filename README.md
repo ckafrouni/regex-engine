@@ -36,7 +36,7 @@ fn main() {
   - `.start` (usize): Starting index of the match.
   - `.end` (usize): Ending index of the match.
   - `range()`: Provides the range of indices for the matched substring.
-- [ ] Add support for character classes `[]`.
+- [X] Add support for character classes `[]`.
 - [ ] Implement non-capturing groups `(?:abc)*`.
 - [ ] Implement capturing groups `(abc)`.
 

@@ -2,11 +2,12 @@ use crate::tokenizer::{Anchor, Char, Quantifier, Token};
 
 use super::errors::ParseError;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum AstNode {
     Chain(Box<[AstNode]>),
     Quantifier(Quantifier, Box<AstNode>),
     Char(Char),
+    CharClass(Box<[Char]>),
     StartAnchor(Box<AstNode>),
     EndAnchor,
 }
@@ -39,6 +40,37 @@ pub fn parse(tokens: Vec<Token>) -> Result<AstNode, ParseError> {
 
         let node: AstNode = match tok {
             Token::Char { val, .. } => AstNode::Char(*val),
+            Token::Anchor {
+                val: Anchor::CharClassStart { .. },
+                ..
+            } => {
+                let mut chars = vec![];
+                while let Some(tok) = tokens.next() {
+                    match tok {
+                        Token::Char { val, .. } => chars.push(*val),
+                        Token::Anchor {
+                            val: Anchor::CharClassEnd { .. },
+                            ..
+                        } => break,
+                        _ => {
+                            return Err(ParseError::UnexpectedToken(
+                                *tok,
+                                "Should have found a char literal".into(),
+                            ))
+                        }
+                    }
+                }
+                AstNode::CharClass(chars.into())
+            }
+            Token::Anchor {
+                val: Anchor::CharClassEnd { .. },
+                ..
+            } => {
+                return Err(ParseError::UnexpectedToken(
+                    *tok,
+                    "Char class end anchor only allowed after char class start anchor".into(),
+                ))
+            }
             Token::Anchor {
                 val: Anchor::Start, ..
             } => {
@@ -74,5 +106,27 @@ pub fn parse(tokens: Vec<Token>) -> Result<AstNode, ParseError> {
         Ok(AstNode::StartAnchor(Box::new(AstNode::Chain(chain.into()))))
     } else {
         Ok(AstNode::Chain(chain.into()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::tokenizer::tokenize;
+
+    #[test]
+    fn test_parse_char_class() {
+        let tokens = tokenize("[abc]".into()).unwrap();
+
+        let expected_ast = AstNode::Chain(
+            vec![AstNode::CharClass(
+                vec![Char::Lit('a'), Char::Lit('b'), Char::Lit('c')].into(),
+            )]
+            .into(),
+        );
+
+        let ast = parse(tokens).unwrap();
+        println!("{:?}", ast);
+        assert_eq!(ast, expected_ast);
     }
 }
