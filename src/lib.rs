@@ -6,6 +6,7 @@
 //!
 //! TODO : later support captures
 
+pub mod colorize;
 pub mod errors;
 mod parser;
 mod regex;

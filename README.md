@@ -1,5 +1,7 @@
 # Rust Regex Engine
 
+> :warning: **Warning**: This project is for educational purposes only and is not intended for production use.
+
 ## Introduction
 
 This project is a custom regex engine implemented in Rust. It aims to provide fundamental regex functionalities with a focus on learning and understanding the inner workings of regex processing.
