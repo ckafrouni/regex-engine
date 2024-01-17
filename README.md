@@ -15,8 +15,8 @@ use rust_regex_engine::Regex;
 
 fn main() {
     let regex = Regex::new("your_pattern_here").unwrap();
-    let is_match = regex.is_match("your_text_here");
-    println!("Does it match? {}", is_match);
+    let res = regex.find("your_text_here");
+    println!("Does it match? {}", res.is_match());
 }
 ```
 
@@ -31,8 +31,7 @@ fn main() {
 
 ## TODO
 
-- [ ] Implement `is_match()` function to return `bool` indicating whether the pattern matches the string.
-- [ ] Implement `find()` function to return a `Match` structure, which includes:
+- [X] Implement `find()` function to return a `Match` structure, which includes:
   - `.matched` (bool): Indicates if the pattern was matched.
   - `.start` (usize): Starting index of the match.
   - `.end` (usize): Ending index of the match.
@@ -40,8 +39,6 @@ fn main() {
 - [ ] Add support for character classes `[]`.
 - [ ] Implement non-capturing groups `(?:abc)*`.
 - [ ] Implement capturing groups `(abc)`.
-- [ ] Support for patterns with parentheses like `"abc*d(efg)+"`.
-- [ ] Add support for capturing groups and backreferences.
 
 ## Tests
 
