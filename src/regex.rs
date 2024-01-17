@@ -56,11 +56,11 @@ impl Regex {
         }
     }
 
-    fn match_chain(&self, nodes: &[Box<parser::AstNode>], s: &str) -> Option<usize> {
+    fn match_chain(&self, nodes: &[parser::AstNode], s: &str) -> Option<usize> {
         let mut current_str = s;
         let mut total_matched = 0;
 
-        for node in nodes {
+        for node in nodes.iter() {
             match self.match_node(node, current_str) {
                 Some(match_len) => {
                     total_matched += match_len;
@@ -76,7 +76,7 @@ impl Regex {
     fn match_quantifier(
         &self,
         quantifier: tokenizer::Quantifier,
-        node: &Box<parser::AstNode>,
+        node: &parser::AstNode,
         s: &str,
     ) -> Option<usize> {
         match quantifier {
@@ -86,10 +86,10 @@ impl Regex {
         }
     }
 
-    fn match_any(&self, node: &Box<parser::AstNode>, s: &str) -> Option<usize> {
+    fn match_any(&self, node: &parser::AstNode, s: &str) -> Option<usize> {
         // Zero or more
         let mut current_str = s;
-        let mut count = 0 as usize;
+        let mut count = 0_usize;
 
         while let Some(n) = self.match_node(node, current_str) {
             count += n;
@@ -99,7 +99,7 @@ impl Regex {
         Some(count)
     }
 
-    fn match_many(&self, node: &Box<parser::AstNode>, s: &str) -> Option<usize> {
+    fn match_many(&self, node: &parser::AstNode, s: &str) -> Option<usize> {
         // One or more
         match self.match_node(node, s) {
             Some(first_len) => {
@@ -110,7 +110,7 @@ impl Regex {
         }
     }
 
-    fn match_option(&self, node: &Box<parser::AstNode>, s: &str) -> Option<usize> {
+    fn match_option(&self, node: &parser::AstNode, s: &str) -> Option<usize> {
         // Zero or one
         self.match_node(node, s).or(Some(0))
     }
